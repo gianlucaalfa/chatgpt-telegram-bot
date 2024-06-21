@@ -60,6 +60,8 @@ def main():
         'vision_max_tokens': int(os.environ.get('VISION_MAX_TOKENS', '300')),
         'tts_model': os.environ.get('TTS_MODEL', 'tts-1'),
         'tts_voice': os.environ.get('TTS_VOICE', 'alloy'),
+        'save_conversations': os.environ.get('SAVE_CONVERSATIONS', 'false').lower() == 'true',
+        'conversations_file': os.environ.get('CONVERSATIONS_FILE', 'storage/conversations.json'),
     }
 
     if openai_config['enable_functions'] and not functions_available:
@@ -100,6 +102,7 @@ def main():
         'tts_prices': [float(i) for i in os.environ.get('TTS_PRICES', "0.015,0.030").split(",")],
         'transcription_price': float(os.environ.get('TRANSCRIPTION_PRICE', 0.006)),
         'bot_language': os.environ.get('BOT_LANGUAGE', 'en'),
+        'show_commands_in_help': os.environ.get('SHOW_COMMANDS_IN_HELP', 'true').lower() == 'true',
     }
 
     plugin_config = {
