@@ -133,15 +133,16 @@ class OpenAIHelper:
         except Exception as e:
             logging.error(f"An error occurred while saving conversations to {file_path}: {e}")
 
-    def __save_conversations(self):
-        self.__save_file('storage/conversations.json', self.conversations)
+    def __attempt_save_conversations(self):
+        if self.config['save_conversations']:
+            self.__save_file(self.config['conversations_file'], self.conversations)        
 
     def __save_last_updated(self):
         last_updated_copy = {chat_id: last_update.isoformat() for chat_id, last_update in self.last_updated.items()}
         self.__save_file('storage/last_updated.json', last_updated_copy)
 
     def __load_conversations_and_last_updated(self):
-        self.conversations = {int(k): v for k, v in self.__load_file('storage/conversations.json').items()}
+        self.conversations = {int(k): v for k, v in self.__load_file(self.config['conversations_file']).items()}
         last_updated_copy = {int(k): v for k, v in self.__load_file('storage/last_updated.json').items()}
         if last_updated_copy:
             self.last_updated = {chat_id: datetime.datetime.fromisoformat(last_update) for chat_id, last_update in last_updated_copy.items()}
@@ -278,7 +279,7 @@ class OpenAIHelper:
                 except Exception as e:
                     logging.warning(f'Error while summarising chat history: {str(e)}. Popping elements instead...')
                     self.conversations[chat_id] = self.conversations[chat_id][-self.config['max_history_size']:]
-                    self.__save_conversations()
+                    self.__attempt_save_conversations()
 
             model = self.config['model']
             if chat_id in self.conversations_vision:
@@ -472,11 +473,11 @@ class OpenAIHelper:
                     self.reset_chat_history(chat_id, self.conversations[chat_id][0]['content'])
                     self.__add_to_history(chat_id, role="assistant", content=summary)
                     self.conversations[chat_id] += [last]
-                    self.__save_conversations()
+                    self.__attempt_save_conversations()
                 except Exception as e:
                     logging.warning(f'Error while summarising chat history: {str(e)}. Popping elements instead...')
                     self.conversations[chat_id] = self.conversations[chat_id][-self.config['max_history_size']:]
-                    self.__save_conversations()
+                    self.__attempt_save_conversations()
 
             message = {'role':'user', 'content':content}
 
@@ -613,7 +614,7 @@ class OpenAIHelper:
         if content == '':
             content = self.config['assistant_prompt']
         self.conversations[chat_id] = [{"role": "system", "content": content}]
-        self.__save_conversations()
+        self.__attempt_save_conversations()
         self.conversations_vision[chat_id] = False
 
     def __max_age_reached(self, chat_id) -> bool:
@@ -643,7 +644,7 @@ class OpenAIHelper:
         :param content: The message content
         """
         self.conversations[chat_id].append({"role": role, "content": content})
-        self.__save_conversations()
+        self.__attempt_save_conversations()
 
     async def __summarise(self, conversation) -> str:
         """
