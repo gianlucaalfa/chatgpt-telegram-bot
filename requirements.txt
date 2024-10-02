@@ -6,7 +6,7 @@ python-telegram-bot==21.5
 requests~=2.32.3
 tenacity==9.0.0
 wolframalpha~=5.1.3
-duckduckgo_search==6.2.11
+duckduckgo_search==6.2.13
 spotipy~=2.24.0
 pytube~=15.0.0
 gtts~=2.5.3
